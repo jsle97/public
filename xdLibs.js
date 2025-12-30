@@ -1892,7 +1892,7 @@ const serveFileAsync = async (request, response, relativePath, method = 'GET', s
    response.setHeader('content-range', `bytes ${start}-${end}/${stats.size}`);
    response.setHeader('content-length', String(end - start + 1));
 
-   const readStream = fs.createReadStream(absolutePath, { start, end });
+   const readStream = fsSync.createReadStream(absolutePath, { start, end });
 
    readStream.on('error', (error) => {
   log(LOG_LEVELS.ERROR, `Error reading file range ${absolutePath}: ${error.message}`);
@@ -1905,7 +1905,7 @@ const serveFileAsync = async (request, response, relativePath, method = 'GET', s
    readStream.pipe(response);
    return true;
  } response.setHeader('content-length', String(stats.size));
- const readStream = fs.createReadStream(absolutePath);
+ const readStream = fsSync.createReadStream(absolutePath);
 
  readStream.on('error', (error) => {
    log(LOG_LEVELS.ERROR, `Error reading file ${absolutePath}: ${error.message}`);
