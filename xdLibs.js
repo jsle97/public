@@ -6,7 +6,7 @@
  *
  */
 
-import http from"http";import https from"https";import{URL,URLSearchParams}from"url";import{gunzipSync,inflateSync,brotliDecompressSync}from"zlib";import{createServer as httpCreateServer}from"node:http";import{createServer as httpsCreateServer}from"node:https";import fs from"node:fs/promises";import fsSync from"node:fs";import path from"node:path";import crypto from"node:crypto";import{EventEmitter}from"node:events"; 
+import http from"http";import https from"https";import{URL,URLSearchParams}from"url";import{gunzipSync,inflateSync,brotliDecompressSync}from"zlib";import fs from"node:fs/promises";import fsSync from"node:fs";import path from"node:path";import crypto from"node:crypto";import{EventEmitter}from"node:events"; 
 
 const CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_", RADIX = 64, TIMESTAMP_LENGTH = 9, INSTANCE_LENGTH = 3, COUNTER_LENGTH = 4, _DEFAULT_LENGTH = 36, PREFIX_LENGTH = 24, HASH_KEY = "xddd666_lol", MIN_LENGTH = TIMESTAMP_LENGTH + INSTANCE_LENGTH + COUNTER_LENGTH, MAX_COUNTER = RADIX ** COUNTER_LENGTH - 1, DEFAULT_LENGTH = _DEFAULT_LENGTH < MIN_LENGTH ? MIN_LENGTH : _DEFAULT_LENGTH;
 const state = { lastTimestamp: -1, counter: 0, instanceId: (function () { let result = ""; for (let i = 0; i < INSTANCE_LENGTH; i++) { result += CHARSET[Math.floor(Math.random() * RADIX)]; } return result; })() }; const toBase64 = (n, l) => { let r = "", v = n; while (v > 0) r = CHARSET[v % RADIX] + r, v = Math.floor(v / RADIX); return r.padStart(l, CHARSET[0]) };
@@ -1892,7 +1892,7 @@ const serveFileAsync = async (request, response, relativePath, method = 'GET', s
    response.setHeader('content-range', `bytes ${start}-${end}/${stats.size}`);
    response.setHeader('content-length', String(end - start + 1));
 
-   const readStream = fs.createReadStream(absolutePath, { start, end });
+   const readStream = fsSync.createReadStream(absolutePath, { start, end });
 
    readStream.on('error', (error) => {
   log(LOG_LEVELS.ERROR, `Error reading file range ${absolutePath}: ${error.message}`);
@@ -1905,7 +1905,7 @@ const serveFileAsync = async (request, response, relativePath, method = 'GET', s
    readStream.pipe(response);
    return true;
  } response.setHeader('content-length', String(stats.size));
- const readStream = fs.createReadStream(absolutePath);
+ const readStream = fsSync.createReadStream(absolutePath);
 
  readStream.on('error', (error) => {
    log(LOG_LEVELS.ERROR, `Error reading file ${absolutePath}: ${error.message}`);
@@ -2781,8 +2781,8 @@ const createServerApp = (options = {}) => {
 
  response.status(404).send('Not Found');
   }; const server = options.https ?
- httpsCreateServer(options.tls || {}, requestHandler) :
- httpCreateServer(requestHandler); server.on('upgrade', (request, socket, head) => {
+ https.createServer(options.tls || {}, requestHandler) :
+ http.createServer(requestHandler); server.on('upgrade', (request, socket, head) => {
    const upgradeHeader = String(request.headers.upgrade || '').toLowerCase();
 
    if (upgradeHeader !== 'websocket') {
